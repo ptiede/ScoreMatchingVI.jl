@@ -1,16 +1,16 @@
-using ScoreMatchinVI
+using ScoreMatchingVI
 using Documenter
 
-DocMeta.setdocmeta!(ScoreMatchinVI, :DocTestSetup, :(using ScoreMatchinVI); recursive=true)
+DocMeta.setdocmeta!(ScoreMatchingVI, :DocTestSetup, :(using ScoreMatchingVI); recursive=true)
 
 makedocs(;
-    modules=[ScoreMatchinVI],
+    modules=[ScoreMatchingVI],
     authors="Paul Tiede <ptiede91@gmail.com> and contributors",
-    repo="https://github.com/ptiede/ScoreMatchinVI.jl/blob/{commit}{path}#{line}",
-    sitename="ScoreMatchinVI.jl",
+    repo="https://github.com/ptiede/ScoreMatchingVI.jl/blob/{commit}{path}#{line}",
+    sitename="ScoreMatchingVI.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://ptiede.github.io/ScoreMatchinVI.jl",
+        canonical="https://ptiede.github.io/ScoreMatchingVI.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -20,6 +20,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/ptiede/ScoreMatchinVI.jl",
+    repo="github.com/ptiede/ScoreMatchingVI.jl",
     devbranch="main",
 )

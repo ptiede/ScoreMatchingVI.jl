@@ -1,4 +1,4 @@
-name = "ScoreMatchinVI"
+name = "ScoreMatchingVI"
 uuid = "057f4c57-2f96-425e-b7c3-642f4ea84ccf"
 authors = ["Paul Tiede <ptiede91@gmail.com> and contributors"]
 version = "1.0.0-DEV"

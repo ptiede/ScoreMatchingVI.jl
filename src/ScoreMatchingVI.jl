@@ -1,4 +1,4 @@
-module ScoreMatchinVI
+module ScoreMatchingVI
 
 # Write your package code here.
 

@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = ScoreMatchinVI
+CurrentModule = ScoreMatchingVI
 ```
 
-# ScoreMatchinVI
+# ScoreMatchingVI
 
-Documentation for [ScoreMatchinVI](https://github.com/ptiede/ScoreMatchinVI.jl).
+Documentation for [ScoreMatchingVI](https://github.com/ptiede/ScoreMatchingVI.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [ScoreMatchinVI]
+Modules = [ScoreMatchingVI]
 ```

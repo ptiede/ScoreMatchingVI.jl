@@ -1,6 +1,6 @@
-using ScoreMatchinVI
+using ScoreMatchingVI
 using Test
 
-@testset "ScoreMatchinVI.jl" begin
+@testset "ScoreMatchingVI.jl" begin
     # Write your tests here.
 end

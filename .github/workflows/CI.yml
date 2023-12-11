@@ -64,6 +64,6 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Documenter: DocMeta, doctest
-          using ScoreMatchinVI
-          DocMeta.setdocmeta!(ScoreMatchinVI, :DocTestSetup, :(using ScoreMatchinVI); recursive=true)
-          doctest(ScoreMatchinVI)
+          using ScoreMatchingVI
+          DocMeta.setdocmeta!(ScoreMatchingVI, :DocTestSetup, :(using ScoreMatchingVI); recursive=true)
+          doctest(ScoreMatchingVI)
