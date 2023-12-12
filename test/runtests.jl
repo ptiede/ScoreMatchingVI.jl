@@ -2,6 +2,7 @@ using ScoreMatchingVI
 using Test
 using LogDensityProblems, LogDensityProblemsAD
 using Random
+using LinearAlgebra
 
 struct LogTargetDensity{M}
     dim::Int
@@ -13,18 +14,15 @@ LogDensityProblems.capabilities(::Type{LogTargetDensity}) = LogDensityProblems.L
 
 
 @testset "ScoreMatchingVI.jl" begin
-    # Write your tests here.
-end
+    using ForwardDiff
 
 
-using ForwardDiff
+    ndim = 6000
+    Σ = rand(ndim)
+    ℓ = LogTargetDensity(length(Σ), collect(Float64, Σ))
 
+    vi = GSMVI(ndim)
 
-ndim = 6000
-Σ = rand(ndim)
-ℓ = LogTargetDensity(length(Σ), collect(Float64, Σ))
-
-vi = GSMVI(ndim)
-
-rng = Random.default_rng()
-d = fit(rng, ADgradient(:ForwardDiff, ℓ), vi, 1000; d0 = MvNormal(zeros(ndim), collect(Float64, I(ndim))))
+    rng = Random.default_rng()
+    d = fit(rng, ADgradient(:ForwardDiff, ℓ), vi, 1000; d0 = MvNormal(zeros(ndim), collect(Float64, I(ndim))))
+    end
