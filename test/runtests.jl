@@ -3,6 +3,7 @@ using Test
 using LogDensityProblems, LogDensityProblemsAD
 using Random
 using LinearAlgebra
+using Distributions
 
 struct LogTargetDensity{M}
     dim::Int
@@ -17,12 +18,38 @@ LogDensityProblems.capabilities(::Type{LogTargetDensity}) = LogDensityProblems.L
     using ForwardDiff
 
 
-    ndim = 6000
+    ndim = 5
     Σ = rand(ndim)
     ℓ = LogTargetDensity(length(Σ), collect(Float64, Σ))
+    @testset "batch size 1" begin
+        vi = GSMVI(ndim; batch=1)
 
-    vi = GSMVI(ndim)
+        rng = Random.default_rng()
+        d = fit(rng, ADgradient(:ForwardDiff, ℓ), vi, 1000; d0 = MvNormal(zeros(ndim), collect(Float64, I(ndim))))
 
-    rng = Random.default_rng()
-    d = fit(rng, ADgradient(:ForwardDiff, ℓ), vi, 1000; d0 = MvNormal(zeros(ndim), collect(Float64, I(ndim))))
+        @test isapprox(d.μ, zeros(ndim), atol=1e-6)
+        @test isapprox(d.Σ, diagm(ℓ.Σ), atol=1e-6)
     end
+
+    @testset "batch size 2" begin
+        vi = GSMVI(ndim; batch=2)
+
+        rng = Random.default_rng()
+        d = fit(rng, ADgradient(:ForwardDiff, ℓ), vi, 1000; d0 = MvNormal(zeros(ndim), collect(Float64, I(ndim))))
+
+        @test isapprox(d.μ, zeros(ndim), atol=1e-6)
+        @test isapprox(d.Σ, diagm(ℓ.Σ), atol=1e-6)
+    end
+
+    @testset "batch size 3" begin
+        vi = GSMVI(ndim; batch=2)
+
+        rng = Random.default_rng()
+        d = fit(rng, ADgradient(:ForwardDiff, ℓ), vi, 1000; d0 = MvNormal(zeros(ndim), collect(Float64, I(ndim))))
+
+        @test isapprox(d.μ, zeros(ndim), atol=1e-6)
+        @test isapprox(d.Σ, diagm(ℓ.Σ), atol=1e-6)
+    end
+
+
+end
