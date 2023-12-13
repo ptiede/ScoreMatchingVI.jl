@@ -4,6 +4,8 @@ using LogDensityProblems, LogDensityProblemsAD
 using Random
 using LinearAlgebra
 using Distributions
+using ForwardDiff
+
 
 struct LogTargetDensity{M}
     dim::Int
@@ -15,7 +17,6 @@ LogDensityProblems.capabilities(::Type{LogTargetDensity}) = LogDensityProblems.L
 
 
 @testset "ScoreMatchingVI.jl" begin
-    using ForwardDiff
 
 
     ndim = 5

@@ -18,33 +18,38 @@ function GSMVI(dimension; batch=2)
     return GSMVI(dimension, batch)
 end
 
-function _gsm_vi_inner!(v, θ, μ, Σ)
+function _gsm_vi_inner!(δμ, δΣ, v, θ, μ, Σ)
     Σv = Σ*v
     vΣv = dot(v,Σv)
-    μdv = dot(μ - θ, v)
+    z = μ - θ
+    μdv = dot(z, v)
     ρ   = 1/2*sqrt(1 + 4*(vΣv + μdv^2)) - 1/2
-    ϵ   = Σv - μ + θ
+    ϵ   = Σv - z
 
     # update μ
-    μv = (μ - θ)*v'
-    δμ = inv(1+ρ)*(I - μv*inv(1 + ρ + μdv))*ϵ
+    δμ .= inv(1+ρ).*(ϵ .- inv(1 + ρ + μdv).*dot(v',ϵ).*z)
     μ2 = μ + δμ
 
     # update Σ
-    δΣ = (μ - θ)*(μ - θ)' - (μ2 - θ)*(μ2 - θ)'
+    z2 = μ2 - θ
+    δΣ .= z.*z' .- z2.*z2'
     return δμ, δΣ
 end
 
 function gsm_vi_step!(rng, ℓ, μ, Σ, θ, gsm::GSMVI)
     (; batch) = gsm
+    Δμ = zero(θ)
+    ΔΣ = fill!(similar(μ, gsm.dim, gsm.dim), 0)
+
     δμ = zero(θ)
     δΣ = fill!(similar(μ, gsm.dim, gsm.dim), 0)
+
     for _ in 1:batch
         rand!(rng, MvNormal(μ, Σ), θ)
         _, g = LogDensityProblems.logdensity_and_gradient(ℓ, θ)
-        dμ, dΣ =  _gsm_vi_inner!(g, θ, μ, Σ)
-        δμ .+= dμ
-        δΣ .+= dΣ
+        _gsm_vi_inner!(δμ, δΣ, g, θ, μ, Σ)
+        Δμ .+= δμ
+        ΔΣ .+= δΣ
     end
     μ .+= δμ./batch
     Σ .+= δΣ./batch
@@ -56,12 +61,14 @@ function gsm_vi_step!(rng, ℓ, μ, Σ, θ, gsm::GSMVI)
     return μ, Σ
 end
 
-function Distributions.fit(rng::Random.AbstractRNG, ℓ, gsm::GSMVI, iterations; d0 = MvNormal(gsm.dim, 1.0))
+function Distributions.fit(rng::Random.AbstractRNG, ℓ, gsm::GSMVI, iterations; d0 = MvNormal(gsm.dim, 1.0), logging=false)
     μ = mean(d0)
     Σ = cov(d0)
     θ = similar(μ)
     for i in 1:iterations
-        @info "On step $i/$iterations"
+        if logging
+            @info "On step $i/$iterations"
+        end
         gsm_vi_step!(rng, ℓ, μ, Σ, θ, gsm)
     end
     return MvNormal(μ, Σ)
