@@ -45,6 +45,7 @@ function gsm_vi_step!(rng, ℓ, μ, Σ, θ, gsm::GSMVI)
     δΣ = fill!(similar(μ, gsm.dim, gsm.dim), 0)
 
     for _ in 1:batch
+        # TODO remove dependency on Distributions?
         rand!(rng, MvNormal(μ, Σ), θ)
         _, g = LogDensityProblems.logdensity_and_gradient(ℓ, θ)
         _gsm_vi_inner!(δμ, δΣ, g, θ, μ, Σ)
@@ -53,9 +54,11 @@ function gsm_vi_step!(rng, ℓ, μ, Σ, θ, gsm::GSMVI)
     end
     μ .+= δμ./batch
     Σ .+= δΣ./batch
+
+    # TODO fix this so we only have a single cholesky decomp
     if !isposdef(Σ)
         @warn "Cholesky decomp failed reverting to last step"
-        Σ .-= Σ′./batch
+        Σ .-= δΣ./batch
     end
 
     return μ, Σ
