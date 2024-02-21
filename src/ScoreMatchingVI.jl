@@ -44,29 +44,42 @@ function gsm_vi_step!(rng, ℓ, μ, Σ, θ, gsm::GSMVI)
     δμ = zero(θ)
     δΣ = fill!(similar(μ, gsm.dim, gsm.dim), 0)
 
+    logp = zero(eltype(μ))
+    logq = zero(eltype(μ))
+    d = MvNormal(μ, Σ)
     for _ in 1:batch
         # TODO remove dependency on Distributions?
-        rand!(rng, MvNormal(μ, Σ), θ)
-        _, g = LogDensityProblems.logdensity_and_gradient(ℓ, θ)
+        rand!(rng, d, θ)
+        f, g = LogDensityProblems.logdensity_and_gradient(ℓ, θ)
+        if !isfinite(f)
+            @error θ
+        end
+        logp =+ f
+        logq =+ logpdf(d, θ)
+
         _gsm_vi_inner!(δμ, δΣ, g, θ, μ, Σ)
         Δμ .+= δμ
         ΔΣ .+= δΣ
     end
-    μ .+= δμ./batch
-    Σ .+= δΣ./batch
+
+    # print("ELBO: ", (logp)/batch, "  ")
+
+    Σ0 = Σ .+ ΔΣ./batch #.+ Diagonal(fill(1e-1, length(μ)))
 
     # TODO fix this so we only have a single cholesky decomp
-    if !isposdef(Σ)
-        @warn "Cholesky decomp failed reverting to last step"
-        Σ .-= δΣ./batch
+    if isposdef(Σ0)
+        μ .+= Δμ./batch
+        Σ .= Σ0
+    else
+        # @warn "Cholesky decomp failed reverting to last step"
     end
 
     return μ, Σ
 end
 
-function Distributions.fit(rng::Random.AbstractRNG, ℓ, gsm::GSMVI, iterations; d0 = MvNormal(gsm.dim, 1.0), logging=false)
-    μ = mean(d0)
-    Σ = cov(d0)
+function Distributions.fit(rng::Random.AbstractRNG, ℓ, gsm::GSMVI, iterations; d0 = MvNormal(zeros(gsm.dim), collect(Float64, I(gsm.dim))), logging=false)
+    μ = copy(mean(d0))
+    Σ = copy(cov(d0))
     θ = similar(μ)
     for i in 1:iterations
         if logging
